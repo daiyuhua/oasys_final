@@ -1,0 +1,25 @@
+server:
+  port: 8082
+  servlet:
+    context-path: /oasys-back-end/
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/oa_db?serverTimezone=UTC
+    username: root
+    password: 123456
+    type: com.alibaba.druid.pool.DruidDataSource
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 200MB
+mybatis:
+  configuration:
+    cache-enabled: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  mapper-locations: classpath:/mapper/*.xml
+  type-aliases-package: com.dyh.entity
+pagehelper:
+  helperDialect: mysql
+  reasonable: true
+  supportMethodsArguments: true
+  pageSizeZero: false

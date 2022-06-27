@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dyh.dao.CheckOnDao">
+    <resultMap id="checkOnMap" type="CheckOn">
+        <id column="id" property="id"/>
+        <result column="check_on_id" property="checkOnId"/>
+        <result column="check_on_time" property="checkOnTime"/>
+        <result column="work_id" property="workId"/>
+        <result column="is_late" property="isLate"/>
+        <result column="gmt_create" property="gmtCreate"/>
+        <result column="gmt_modified" property="gmtModified"/>
+        <association property="employee" javaType="employee">
+            <result column="fullname" property="fullname"/>
+        </association>
+    </resultMap>
+
+    <insert id="normalCheckOn" parameterType="CheckOn">
+        insert into sys_check_on(check_on_id, check_on_time, work_id, is_late)
+        values (#{checkOnId}, #{checkOnTime}, #{workId}, #{isLate})
+    </insert>
+
+    <select id="findAllCheckOnByWorkId" resultMap="checkOnMap">
+        select sys_check_on.work_id, sys_check_on.check_on_time, sys_check_on.is_late, sys_employee.fullname
+        from sys_check_on,
+        sys_employee
+        where sys_check_on.work_id = sys_employee.work_id and sys_check_on.work_id = #{workId}
+        <if test="page != null and size != null">
+            limit #{page},#{size}
+        </if>
+    </select>
+
+    <select id="getTotal" resultType="Integer">
+        select count(*)
+        from sys_check_on,
+             sys_employee
+        where sys_check_on.work_id = sys_employee.work_id
+          and sys_check_on.work_id = #{workId}
+    </select>
+    <select id="getTotalByWorkIdAndDate" resultType="Integer">
+        select count(*) from sys_check_on where work_id = #{workId} and check_on_time like '%' #{date} '%' and is_late = '准时'
+    </select>
+</mapper>

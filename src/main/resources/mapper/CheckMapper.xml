@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dyh.dao.CheckDao">
+    <resultMap id="CheckMap" type="Check">
+        <id column="id" property="id"/>
+        <result property="workId" column="work_id"/>
+        <result property="checkId" column="check_id"/>
+        <result property="checkReason" column="check_reason"/>
+        <result property="gmtCreate" column="gmt_create"/>
+        <result property="gmtModified" column="gmt_modified"/>
+        <association property="employee" javaType="com.dyh.entity.Employee">
+            <result column="fullname" property="fullname"/>
+        </association>
+    </resultMap>
+
+    <insert id="addCheck" parameterType="Check">
+        insert into sys_check(check_id, work_id, check_reason) values (#{checkId},#{workId},#{checkReason})
+    </insert>
+</mapper>

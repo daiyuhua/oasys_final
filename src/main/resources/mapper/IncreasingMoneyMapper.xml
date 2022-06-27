@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dyh.dao.IncreasingMoneyDao">
+    <resultMap id="increasingMoneyMap" type="com.dyh.entity.IncreasingMoney">
+        <id column="id" property="id"/>
+        <result column="increasing_id" property="increasingId"/>
+        <result column="work_id" property="workId"/>
+        <result column="office" property="office"/>
+        <result column="apply_date" property="applyDate" javaType="DATE" jdbcType="DATE"/>
+        <result column="increasing_money" property="increasingMoney"/>
+        <result column="apply_status" property="applyStatus"/>
+        <result column="money_office_status" property="moneyOfficeStatus"/>
+        <result column="gmt_create" property="gmtCreate"/>
+        <result column="gmt_modified" property="gmtModified"/>
+        <association property="employee" javaType="com.dyh.entity.Employee">
+            <result column="fullname" property="fullname"/>
+            <result column="money" property="money"/>
+        </association>
+    </resultMap>
+
+    <select id="findIncreasingMoneyByWorkId" resultMap="increasingMoneyMap">
+        select sys_increasing_money.work_id,
+        sys_increasing_money.apply_date,
+        sys_increasing_money.increasing_money,
+        sys_increasing_money.apply_status,
+        sys_increasing_money.money_office_status,
+        sys_employee.fullname,
+        sys_employee.money
+        from sys_increasing_money,
+        sys_employee
+        where sys_increasing_money.work_id = sys_employee.work_id
+        and sys_increasing_money.work_id = #{workId}
+        <if test="page != null and size != null">
+            limit #{page},#{size}
+        </if>
+    </select>
+    <select id="getTotalIncreaseMoney" resultType="Integer">
+        select count(*)
+        from sys_increasing_money,
+             sys_employee
+        where sys_increasing_money.work_id = sys_employee.work_id
+          and sys_increasing_money.work_id = #{workId}
+    </select>
+
+    <insert id="addIncreasingMoney" parameterType="IncreasingMoney">
+        insert into sys_increasing_money(increasing_id, work_id, office, apply_date, increasing_money)
+        values (#{increasingId}, #{workId}, #{office}, #{applyDate}, #{increasingMoney})
+    </insert>
+
+    <select id="checkSame" resultMap="increasingMoneyMap">
+        select *
+        from sys_increasing_money,
+             sys_employee
+        where sys_increasing_money.work_id = sys_employee.work_id
+          and sys_increasing_money.work_id = #{workId}
+          and sys_increasing_money.apply_date like '%' #{applyDate} '%'
+    </select>
+
+
+    <select id="findAllIncreasingApply" resultMap="increasingMoneyMap">
+        select sys_increasing_money.work_id,
+        sys_increasing_money.apply_date,
+        sys_increasing_money.office,
+        sys_increasing_money.increasing_money,
+        sys_increasing_money.apply_status,
+        sys_increasing_money.money_office_status,
+        sys_employee.fullname,
+        sys_employee.money
+        from sys_increasing_money,
+        sys_employee
+        where sys_increasing_money.work_id = sys_employee.work_id
+        and sys_increasing_money.office = #{office} and sys_increasing_money.apply_status='未审核'
+        <if test="page != null and size != null">
+            limit #{page},#{size}
+        </if>
+    </select>
+    <select id="getTotalIncreasingApply" resultType="Integer">
+        select count(*)
+        from sys_increasing_money,
+             sys_employee
+        where sys_increasing_money.work_id = sys_employee.work_id
+          and sys_increasing_money.office = #{office}
+          and sys_increasing_money.apply_status = '未审核'
+    </select>
+    <update id="editApplyStatus" parameterType="increasingMoney">
+        update sys_increasing_money
+        set apply_status=#{applyStatus}
+        where work_id = #{workId}
+          and apply_date = #{applyDate,jdbcType=DATE}
+    </update>
+
+    <select id="findAllPassApply" resultMap="increasingMoneyMap">
+        select sys_increasing_money.work_id,
+        sys_increasing_money.apply_date,
+        sys_increasing_money.office,
+        sys_increasing_money.increasing_money,
+        sys_increasing_money.apply_status,
+        sys_increasing_money.money_office_status,
+        sys_employee.fullname,
+        sys_employee.money
+        from sys_increasing_money,
+        sys_employee
+        where sys_increasing_money.work_id = sys_employee.work_id
+        and sys_increasing_money.apply_status='通过'
+        <if test="page != null and size != null">
+            limit #{page},#{size}
+        </if>
+    </select>
+    <select id="getTotalPassApply" resultType="Integer">
+        select count(*)
+        from sys_increasing_money,
+             sys_employee
+        where sys_increasing_money.work_id = sys_employee.work_id
+          and sys_increasing_money.apply_status = '通过'
+    </select>
+    <update id="editMoneyOfficeStatus" parameterType="increasingMoney">
+        update sys_increasing_money
+        set money_office_status=#{moneyOfficeStatus}
+        where work_id = #{workId}
+          and apply_date = #{applyDate,jdbcType=DATE}
+    </update>
+
+</mapper>

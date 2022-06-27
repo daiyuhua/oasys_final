@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dyh.dao.EmployeeDao">
+    <resultMap id="employeeResultMap" type="Employee">
+        <id column="id" property="id"/>
+        <result column="work_id" property="workId"/>
+        <result column="sex" property="sex"/>
+        <result column="nation" property="nation"/>
+        <result column="telephone" property="telephone"/>
+        <result column="no_id" property="noId"/>
+        <result column="address" property="address"/>
+        <result column="status" property="status"/>
+        <result column="money" property="money"/>
+        <result column="gmt_create" property="gmtCreate"/>
+        <result column="gmt_modified" property="gmtModified"/>
+    </resultMap>
+
+    <update id="editEmployee" parameterType="Employee">
+        update sys_employee
+        set fullname=#{fullname},
+            sex=#{sex},
+            nation=#{nation},
+            telephone=#{telephone},
+            no_id=#{noId},
+            address=#{address},
+            money=#{money},
+            status=#{status}
+        where work_id = #{workId}
+    </update>
+
+    <insert id="addEmployee" parameterType="Employee">
+        insert into sys_employee(work_id, fullname, sex, nation, telephone, no_id, address, money)
+        values (#{workId}, #{fullname}, #{sex}, #{nation}, #{telephone}, #{noId}, #{address},#{money})
+    </insert>
+
+    <delete id="deleteEmployee">
+        delete from sys_employee where work_id=#{workId}
+    </delete>
+    
+    <select id="findEmployeeByWorkId" resultMap="employeeResultMap">
+        select * from sys_employee where work_id=#{workId}
+    </select>
+
+    <update id="editEmployeeStatus" parameterType="String">
+        update sys_employee set status = '离职' where work_id=#{workId}
+    </update>
+
+    <update id="editEmployeeMoney" parameterType="Employee">
+        update sys_employee
+        set money=#{money}
+        where work_id = #{workId}
+    </update>
+</mapper>

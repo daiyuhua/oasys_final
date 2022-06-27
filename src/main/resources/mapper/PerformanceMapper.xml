@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dyh.dao.PerformanceDao">
+    <resultMap id="performanceMap" type="com.dyh.entity.Performance">
+        <id column="id" property="id"/>
+        <result column="performance_id" property="performanceId"/>
+        <result column="work_id" property="workId"/>
+        <result column="office" property="office"/>
+        <result column="apply_date" property="applyDate"/>
+        <result column="check_on_day" property="checkOnDay"/>
+        <result column="check_on_percent" property="checkOnPercent"/>
+        <result column="performance_status" property="performanceStatus"/>
+        <result column="is_re_check" property="isReCheck"/>
+        <result column="re_check_status" property="reCheckStatus"/>
+        <collection property="employee" javaType="com.dyh.entity.Employee">
+            <result column="fullname" property="fullname"/>
+            <result column="status" property="status"/>
+        </collection>
+    </resultMap>
+
+    <select id="findAllPerformanceByWorkId" resultMap="performanceMap">
+        select * from sys_performance,sys_employee where sys_performance.work_id=sys_employee.work_id and
+        sys_performance.work_id = #{workId}
+        <if test="page != null and size != null">
+            limit #{page},#{size}
+        </if>
+    </select>
+
+    <select id="getTotalPerformanceByWorkId" resultType="INTEGER">
+        select count(*)
+        from sys_performance,
+             sys_employee
+        where sys_performance.work_id = sys_employee.work_id
+          and sys_employee.work_id = #{workId}
+    </select>
+
+    <insert id="addPerformance" parameterType="com.dyh.entity.Performance">
+        insert into sys_performance(performance_id, work_id, office, apply_date, check_on_day, check_on_percent,
+                                    performance_status)
+        VALUES (#{performanceId}, #{workId}, #{office}, #{applyDate}, #{checkOnDay}, #{checkOnPercent},
+                #{performanceStatus})
+    </insert>
+
+    <update id="editIsReCheck">
+        update sys_performance
+        set is_re_check=#{isReCheck}
+        where work_id = #{workId}
+          and apply_date = #{applyDate}
+    </update>
+
+    <select id="findAllReCheckByOffice" resultMap="performanceMap">
+        select sys_performance.*, sys_employee.fullname
+        from sys_performance,
+        sys_employee
+        where sys_performance.work_id = sys_employee.work_id
+        and is_re_check = '是'
+        and re_check_status = '未审核'
+        and office = #{office}
+        <if test="page != null and size != null">
+            limit #{page},#{size}
+        </if>
+    </select>
+
+    <select id="getTotalReCheck" resultType="Integer">
+        select count(*)
+        from sys_performance,
+             sys_employee
+        where sys_performance.work_id = sys_employee.work_id
+          and is_re_check = '是'
+          and re_check_status = '未审核'
+          and office = #{office}
+    </select>
+
+    <update id="editReCheckStatus" parameterType="com.dyh.entity.Performance">
+        update sys_performance
+        set re_check_status=#{reCheckStatus}
+        where performance_id = #{performanceId}
+    </update>
+    <select id="getTotalUnPassPerformance" resultType="Integer">
+        select count(*) from sys_performance where work_id=#{workId} and performance_status = '未通过'
+    </select>
+</mapper>

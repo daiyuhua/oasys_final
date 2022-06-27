@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyh.dao.UserDao">
+    <resultMap id="UserMap" type="com.dyh.entity.User">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="username" jdbcType="VARCHAR" property="username"/>
+        <result column="password" jdbcType="VARCHAR" property="password"/>
+        <result column="work_id" property="workId"/>
+        <result column="fullname" jdbcType="VARCHAR" property="fullname"/>
+        <result column="status" property="status"/>
+        <result column="role_id" property="roleId"/>
+        <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate"/>
+        <result column="gmt_modified" jdbcType="TIMESTAMP" property="gmtModified"/>
+        <association property="employee" javaType="com.dyh.entity.Employee">
+            <id column="id" property="id"/>
+            <result column="fullname2" property="fullname"/>
+            <result column="work_id2" property="workId"/>
+            <result column="sex" property="sex"/>
+            <result column="nation" property="nation"/>
+            <result column="telephone" property="telephone"/>
+            <result column="no_id" property="noId"/>
+            <result column="address" property="address"/>
+            <result column="status2" property="status"/>
+            <result column="money" property="money"/>
+            <result column="gmt_create" property="gmtCreate"/>
+            <result column="gmt_modified" property="gmtModified"/>
+        </association>
+    </resultMap>
+
+    <select id="checkLogin" resultMap="UserMap">
+        SELECT *
+        FROM sys_user,
+             sys_employee,
+             sys_user_role
+        WHERE sys_user.work_id = sys_employee.work_id
+          AND sys_user.username = sys_user_role.username
+          AND sys_user.username = #{username}
+          AND sys_user.password = #{password}
+    </select>
+
+    <select id="findAllUser" resultMap="UserMap">
+        select sys_user.*,
+        sys_employee.id as id1,
+        sys_employee.work_id as work_id2,
+        sys_employee.fullname as fullname2,
+        sys_employee.sex,
+        sys_employee.nation,
+        sys_employee.telephone,
+        sys_employee.no_id,
+        sys_employee.address,
+        sys_employee.money,
+        sys_employee.status as status2,
+        sys_employee.gmt_create,
+        sys_employee.gmt_modified,
+        sys_role.role_id
+        from sys_user,
+        sys_employee,
+        sys_user_role,
+        sys_role
+        where sys_user.work_id = sys_employee.work_id
+        and sys_user.username = sys_user_role.username
+        and sys_user_role.role_id=sys_role.role_id
+        <if test="fatherRole != null and fatherRole != 001">
+            and sys_role.father_role = #{fatherRole}
+        </if>
+        <if test="keyword != null">
+            and sys_user.fullname like '%' #{keyword} '%'
+        </if>
+        <if test="page != null and size != null">
+            limit #{page},#{size}
+        </if>
+    </select>
+
+    <select id="getTotal" resultType="INTEGER">
+        select count(*)
+        from sys_user,
+             sys_employee
+        where sys_user.work_id = sys_employee.work_id
+    </select>
+
+    <update id="editUser" parameterType="User">
+        UPDATE sys_user
+        SET password=#{password},
+            fullname=#{fullname}
+        WHERE username = #{username}
+    </update>
+
+    <select id="findUserByKeyword" resultMap="UserMap">
+        select sys_user.*,
+        sys_employee.id as id1,
+        sys_employee.work_id as work_id2,
+        sys_employee.fullname as fullname2,
+        sys_employee.sex,
+        sys_employee.nation,
+        sys_employee.telephone,
+        sys_employee.no_id,
+        sys_employee.address,
+        sys_employee.status as status2,
+        sys_employee.money
+        from sys_user,
+        sys_employee
+        where sys_user.work_id=sys_employee.work_id
+        <if test="keyword!=null and keyword!=''">
+            and sys_user.fullname like '%'#{keyword}'%'
+        </if>
+    </select>
+
+    <insert id="addUser" parameterType="User">
+        insert into sys_user(username, password, work_id, fullname)
+        values (#{username}, #{password}, #{workId}, #{fullname})
+    </insert>
+
+    <insert id="addUserRole" parameterType="User">
+        insert into sys_user_role(role_id, username)
+        values (#{roleId}, #{username})
+    </insert>
+
+    <update id="editUserStatus" parameterType="String">
+        update sys_user
+        set status='注销'
+        where work_id = #{workId}
+    </update>
+
+</mapper>

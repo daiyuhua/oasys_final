@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyh.dao.MenuDao">
+        <resultMap id="menuResultMap" type="com.dyh.entity.Menu">
+            <id column="id" jdbcType="BIGINT" property="id"/>
+            <result column="name" jdbcType="VARCHAR" property="name"/>
+            <result column="url" jdbcType="VARCHAR" property="url"/>
+            <result column="path" jdbcType="VARCHAR" property="path"/>
+            <result column="component" jdbcType="VARCHAR" property="component"/>
+            <result column="menu_father" jdbcType="BIGINT" property="menuFather"/>
+            <result column="menu_icon" jdbcType="VARCHAR" property="menuIcon"/>
+            <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate"/>
+            <result column="gmt_modified" jdbcType="TIMESTAMP" property="gmtModified"/>
+        </resultMap>
+
+        <resultMap id="childrenResultMap" type="Menu" extends="menuResultMap">
+            <collection property="children" ofType="Menu">
+                <id column="id2" property="id" jdbcType="BIGINT"/>
+                <result column="name2" jdbcType="VARCHAR" property="name"/>
+                <result column="url2" jdbcType="VARCHAR" property="url"/>
+                <result column="path2" jdbcType="VARCHAR" property="path"/>
+                <result column="component2" jdbcType="VARCHAR" property="component"/>
+                <result column="menu_father2" jdbcType="BIGINT" property="menuFather"/>
+                <result column="menu_icon2" jdbcType="VARCHAR" property="menuIcon"/>
+                <result column="gmt_create2" jdbcType="TIMESTAMP" property="gmtCreate"/>
+                <result column="gmt_modified2" jdbcType="TIMESTAMP" property="gmtModified"/>
+            </collection>
+        </resultMap>
+
+<!--    <resultMap id="menuResultMap" type="com.dyh.entity.Menu">-->
+<!--        <id column="id" jdbcType="BIGINT" property="id"/>-->
+<!--        <result column="name" jdbcType="VARCHAR" property="name"/>-->
+<!--        <result column="url" jdbcType="VARCHAR" property="url"/>-->
+<!--        <result column="path" jdbcType="VARCHAR" property="path"/>-->
+<!--        <result column="component" jdbcType="VARCHAR" property="component"/>-->
+<!--        <result column="menu_father" jdbcType="BIGINT" property="menuFather"/>-->
+<!--        <result column="menu_icon" jdbcType="VARCHAR" property="menuIcon"/>-->
+<!--        <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate"/>-->
+<!--        <result column="gmt_modified" jdbcType="TIMESTAMP" property="gmtModified"/>-->
+<!--        <collection property="children" ofType="Menu">-->
+<!--            <id column="id2" property="id" jdbcType="BIGINT"/>-->
+<!--            <result column="name2" jdbcType="VARCHAR" property="name"/>-->
+<!--            <result column="url2" jdbcType="VARCHAR" property="url"/>-->
+<!--            <result column="path2" jdbcType="VARCHAR" property="path"/>-->
+<!--            <result column="component2" jdbcType="VARCHAR" property="component"/>-->
+<!--            <result column="menu_father2" jdbcType="BIGINT" property="menuFather"/>-->
+<!--            <result column="menu_icon2" jdbcType="VARCHAR" property="menuIcon"/>-->
+<!--            <result column="gmt_create2" jdbcType="TIMESTAMP" property="gmtCreate"/>-->
+<!--            <result column="gmt_modified2" jdbcType="TIMESTAMP" property="gmtModified"/>-->
+<!--            <collection property="children" ofType="Menu">-->
+<!--                <id column="id3" property="id" jdbcType="BIGINT"/>-->
+<!--                <result column="name3" jdbcType="VARCHAR" property="name"/>-->
+<!--                <result column="url3" jdbcType="VARCHAR" property="url"/>-->
+<!--                <result column="path3" jdbcType="VARCHAR" property="path"/>-->
+<!--                <result column="component3" jdbcType="VARCHAR" property="component"/>-->
+<!--                <result column="menu_father3" jdbcType="BIGINT" property="menuFather"/>-->
+<!--                <result column="menu_icon3" jdbcType="VARCHAR" property="menuIcon"/>-->
+<!--                <result column="gmt_create3" jdbcType="TIMESTAMP" property="gmtModified"/>-->
+<!--            </collection>-->
+<!--        </collection>-->
+<!--    </resultMap>-->
+
+    <select id="findMenuByUsername" resultMap="childrenResultMap">
+        SELECT DISTINCT m1.*,
+                        m2.`id`        AS id2,
+                        m2.`component` AS component2,
+                        m2.`menu_icon` AS menu_icon2,
+                        m2.`name`      AS name2,
+                        m2.`id`        AS menu_father2,
+                        m2.`path`      AS path2
+        FROM sys_menu m1,
+             sys_menu m2,
+             sys_user_role,
+             sys_role_menu
+        WHERE m1.`id` = m2.`menu_father`
+          AND sys_user_role.`username` = #{username}
+          and sys_user_role.`role_id` = sys_role_menu.`role_id`
+          and sys_role_menu.`menu_id` = m2.`id`
+        order by m1.`id`, m2.`id`
+    </select>
+</mapper>

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dyh.dao.VacationDao">
+    <resultMap id="vacationMap" type="Vacation">
+        <id property="id" column="id"/>
+        <result property="vacationId" column="vacation_id"/>
+        <result property="workId" column="work_id"/>
+        <result property="office" column="office"/>
+        <result property="vacationType" column="vacation_type"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="reason" column="reason"/>
+        <result property="status" column="status"/>
+        <result property="checkId" column="check_id"/>
+        <result property="gmtCreate" column="gmt_create"/>
+        <result property="gmtModified" column="gmt_modified"/>
+        <association property="employee" javaType="com.dyh.entity.Employee">
+            <result property="fullname" column="fullname"/>
+        </association>
+        <association property="check" javaType="com.dyh.entity.Check">
+            <result property="checkReason" column="check_reason"/>
+        </association>
+    </resultMap>
+
+    <resultMap id="reportMap" type="Report">
+        <id column="id" property="id"/>
+        <result column="vacation_id" property="vacationId"/>
+        <result column="status" property="status"/>
+        <result column="report_time" property="reportTime"/>
+        <result column="gmt_create" property="gmtCreate"/>
+        <result column="gmt_modified" property="gmtModified"/>
+        <association property="vacation" javaType="com.dyh.entity.Vacation">
+            <result property="workId" column="work_id"/>
+            <result property="office" column="office"/>
+            <result property="vacationType" column="vacation_type"/>
+            <result property="startTime" column="start_time"/>
+            <result property="endTime" column="end_time"/>
+            <result property="reason" column="reason"/>
+            <result property="status" column="status1"/>
+            <result property="checkId" column="check_id"/>
+            <result property="gmtCreate" column="gmt_create"/>
+            <result property="gmtModified" column="gmt_modified"/>
+            <association property="employee" javaType="com.dyh.entity.Employee">
+                <result property="fullname" column="fullname"/>
+            </association>
+            <association property="check" javaType="com.dyh.entity.Check">
+                <result property="checkReason" column="check_reason"/>
+            </association>
+        </association>
+    </resultMap>
+
+    <insert id="addVacation" parameterType="Vacation">
+        insert into sys_vacation(vacation_id, work_id, office, vacation_type, start_time, end_time, reason)
+        values (#{vacationId}, #{workId}, #{office}, #{vacationType}, #{startTime}, #{endTime}, #{reason})
+    </insert>
+
+    <select id="findAllVacation" resultMap="vacationMap">
+        select * from sys_vacation,sys_employee where sys_vacation.work_id=sys_employee.work_id and office = #{roleId}
+        and sys_vacation. status='未审核'
+        <if test="page != null and size != null">
+            limit #{page},#{size}
+        </if>
+    </select>
+    <select id="getTotal" resultType="INTEGER">
+        select count(*)
+        from sys_vacation
+        where office = #{roleId}
+    </select>
+    <update id="editVacationStatus" parameterType="Vacation">
+        update sys_vacation
+        set status  = #{status},
+            check_id=#{checkId}
+        where vacation_id = #{vacationId}
+    </update>
+    <insert id="addReport" parameterType="Report">
+        insert into sys_report(vacation_id)
+        values (#{vacationId})
+    </insert>
+    <select id="findReportByVacationId" resultMap="reportMap">
+        SELECT sys_report.*,
+               sys_vacation.work_id,
+               sys_vacation.STATUS AS status1,
+               sys_vacation.check_id,
+               sys_vacation.vacation_type,
+               sys_vacation.start_time,
+               sys_vacation.end_time,
+               sys_vacation.reason,
+               sys_employee.fullname,
+               sys_check.check_reason
+        FROM sys_check,
+             sys_report,
+             sys_vacation,
+             sys_employee
+        WHERE sys_vacation.work_id = sys_employee.work_id
+          AND sys_report.vacation_id = sys_vacation.vacation_id
+          AND sys_vacation.check_id = sys_check.check_id
+          AND sys_vacation.vacation_id = #{vacationId}
+    </select>
+    <select id="findVacationByWorkId" resultMap="vacationMap">
+        SELECT sys_vacation.*,sys_employee.fullname FROM sys_vacation,sys_employee WHERE
+        sys_vacation.work_id =sys_employee.work_id and sys_vacation.work_id=#{workId}
+        <if test="keyword!=null">
+            and vacation_type like '%' #{keyword} '%'
+        </if>
+        <if test="page != null and size != null">
+            limit #{page},#{size}
+        </if>
+    </select>
+    <select id="getTotalVacation" resultType="INTEGER">
+        SELECT count(*)
+        FROM sys_vacation,
+             sys_employee
+        WHERE sys_vacation.work_id = sys_employee.work_id
+          and sys_vacation.work_id = #{workId}
+    </select>
+    <update id="editReport" parameterType="Report">
+        update sys_report
+        set report_time=#{reportTime},
+            status='销假'
+        where vacation_id = #{vacationId}
+    </update>
+    <select id="findVacationByWorkIdAndStatus" parameterType="String" resultMap="vacationMap">
+        select * from sys_vacation where work_id=#{workId} and status='未审核'
+    </select>
+    <update id="editVacation" parameterType="Vacation">
+        update sys_vacation set vacation_type=#{vacationType},start_time=#{startTime},end_time=#{endTime},reason=#{reason} where work_id=#{workId}
+    </update>
+</mapper>

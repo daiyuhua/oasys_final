@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dyh.dao.ResignDao">
+    <resultMap id="resignMap" type="Resign">
+        <id column="id" property="id"/>
+        <result column="resign_id" property="resignId"/>
+        <result column="work_id" property="workId"/>
+        <result column="office" property="office"/>
+        <result column="reason" property="reason"/>
+        <result column="apply_date" property="applyDate"/>
+        <result column="apply_doc" property="applyDoc"/>
+        <result column="status" property="status"/>
+        <result column="gmt_create" property="gmtCreate"/>
+        <result column="gmt_modified" property="gmtModified"/>
+        <association property="employee" javaType="com.dyh.entity.Employee">
+            <result column="fullname" property="fullname"/>
+        </association>
+    </resultMap>
+
+
+    <insert id="addResignApply" parameterType="Resign">
+        insert into sys_resign(resign_id, work_id, office, reason, apply_doc, apply_date)
+        values (#{resignId}, #{workId}, #{office}, #{reason}, #{applyDoc}, #{applyDate})
+    </insert>
+
+    <update id="editResignApplyStatus" parameterType="Resign">
+        update sys_resign
+        set status = #{status}
+        where resign_id = #{resignId}
+    </update>
+
+    <select id="findAllApply" resultMap="resignMap">
+        select * from sys_resign,sys_employee where sys_resign.work_id=sys_employee.work_id and sys_resign. status='未审核'
+        <if test="roleId!=null and roleId!='001'">
+            and office = #{roleId}
+        </if>
+        <if test="keyword != null">
+            and sys_employee.fullname like '%' #{keyword} '%'
+        </if>
+        <if test="page != null and size != null">
+            limit #{page},#{size}
+        </if>
+    </select>
+    <select id="getTotal" resultType="INTEGER">
+        select count(*)
+        from sys_resign,sys_employee
+        where sys_resign.work_id=sys_employee.work_id and office = #{roleId}
+    </select>
+
+    <select id="findResignByWorkId" resultMap="resignMap">
+        select *
+        from sys_resign
+        where work_id = #{workId}
+          and status = '未审核'
+    </select>
+</mapper>
